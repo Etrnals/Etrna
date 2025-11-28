@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "allowJs": false,
+    "isolatedModules": true,
+    "baseUrl": "./",
+    "paths": {
+      "@etrna/config": ["../../packages/config/src"],
+      "@etrna/sdk": ["../../packages/sdk/src"]
+    },
+    "types": ["node"]
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
