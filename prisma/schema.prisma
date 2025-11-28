@@ -1,0 +1,66 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  createdAt     DateTime @default(now())
+  wallet        Wallet?
+  agents        Agent[]
+  subscriptions Subscription[]
+}
+
+model Wallet {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String   @unique
+  smartAddress String   @unique
+  createdAt    DateTime @default(now())
+}
+
+model MusicTrack {
+  id           String   @id @default(cuid())
+  artistId     String
+  artist       User     @relation(fields: [artistId], references: [id])
+  title        String
+  uefId        Int
+  chainTokenId Int?
+  uri          String
+  createdAt    DateTime @default(now())
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  plan      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model OracleRequest {
+  id         String   @id @default(cuid())
+  uefId      Int
+  prompt     String
+  requester  String
+  chainId    Int
+  txHash     String?
+  resultHash String?
+  fulfilled  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Agent {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  onchainAddr String   @unique
+  manifestUri String
+  createdAt   DateTime @default(now())
+}
