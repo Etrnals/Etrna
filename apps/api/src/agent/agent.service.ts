@@ -1,21 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService, AgentRecord } from '../prisma/prisma.service';
 import { CreateAgentDto } from './dto/create-agent.dto';
 
 @Injectable()
 export class AgentService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async registerAgent(dto: CreateAgentDto) {
-    // Placeholder logic; integrate on-chain AgentRegistry + wallet session keys.
-    return {
+  async registerAgent(dto: CreateAgentDto): Promise<AgentRecord> {
+    return this.prisma.createAgent({
       onchainAddress: dto.onchainAddress,
       manifestUri: dto.manifestUri,
-    };
+    });
   }
 
-  async getAgent(id: string) {
-    // Placeholder retrieval; wire up Prisma in production.
-    return { id };
+  async getAgent(id: string): Promise<AgentRecord> {
+    const agent = await this.prisma.findAgent(id);
+    if (!agent) {
+      throw new NotFoundException(`Agent ${id} not found`);
+    }
+    return agent;
   }
 }
