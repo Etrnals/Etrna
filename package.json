@@ -4,10 +4,6 @@
   "private": true,
   "license": "MIT",
   "packageManager": "pnpm@8.15.8",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "build": "turbo run build",
     "lint": "turbo run lint",
@@ -28,6 +24,6 @@
     "ethers": "^6.7.1",
     "express": "^4.19.2",
     "keccak256": "^1.0.6",
-    "merkletreejs": "^0.4.5"
+    "merkletreejs": "^0.6.0"
   }
 }
