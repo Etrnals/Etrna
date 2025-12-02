@@ -5,13 +5,14 @@
   "license": "MIT",
   "packageManager": "pnpm@8.15.8",
   "scripts": {
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
     "compile": "hardhat compile",
+    "test": "pnpm run contract:test",
     "contract:test": "hardhat test",
+    "build": "pnpm run compile && pnpm run frontend:build",
+    "frontend:build": "pnpm -C frontend build",
     "deploy": "node scripts/deploy.js",
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "lint": "echo 'No lint task configured'"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
