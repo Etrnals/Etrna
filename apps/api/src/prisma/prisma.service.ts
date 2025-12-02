@@ -35,14 +35,26 @@ export interface SmartAccountRecord {
   createdAt: Date;
 }
 
+export interface UefRecord {
+  id: number;
+  owner: string;
+  name: string;
+  uri: string;
+  contentHash: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 @Injectable()
 export class PrismaService {
   private agents = new Map<string, AgentRecord>();
   private tracks = new Map<number, TrackRecord>();
   private oracleRequests = new Map<number, OracleRequestRecord>();
   private smartAccounts = new Map<string, SmartAccountRecord>();
+  private uefs = new Map<number, UefRecord>();
   private oracleCounter = 1;
   private trackCounter = 1;
+  private uefCounter = 1;
 
   async createAgent(data: Pick<AgentRecord, 'onchainAddress' | 'manifestUri'>): Promise<AgentRecord> {
     const record: AgentRecord = {
@@ -116,6 +128,42 @@ export class PrismaService {
     };
     this.smartAccounts.set(userId, created);
     return created;
+  }
+
+  async registerUef(data: Pick<UefRecord, 'owner' | 'uri' | 'contentHash' | 'name'>): Promise<UefRecord> {
+    const record: UefRecord = {
+      id: this.uefCounter++,
+      name: data.name,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...data,
+    };
+    this.uefs.set(record.id, record);
+    return record;
+  }
+
+  async updateUef(
+    id: number,
+    update: Partial<Pick<UefRecord, 'uri' | 'contentHash' | 'name'>>,
+  ): Promise<UefRecord | null> {
+    const existing = this.uefs.get(id);
+    if (!existing) return null;
+
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(update).filter(([, value]) => value !== undefined),
+    ) as Partial<UefRecord>;
+
+    const next: UefRecord = { ...existing, ...filteredUpdates, updatedAt: new Date() };
+    this.uefs.set(id, next);
+    return next;
+  }
+
+  async listUefs(): Promise<UefRecord[]> {
+    return Array.from(this.uefs.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async findUef(id: number): Promise<UefRecord | null> {
+    return this.uefs.get(id) ?? null;
   }
 
   private generateHexAddress(bytes: number) {

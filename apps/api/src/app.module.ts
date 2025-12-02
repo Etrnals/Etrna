@@ -6,6 +6,7 @@ import { MusicModule } from './music/music.module';
 import { OracleModule } from './oracle/oracle.module';
 import { AgentModule } from './agent/agent.module';
 import { AuthModule } from './auth/auth.module';
+import { UefModule } from './uef/uef.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuthModule } from './auth/auth.module';
     MusicModule,
     OracleModule,
     AgentModule,
+    UefModule,
   ],
 })
 export class AppModule {}
