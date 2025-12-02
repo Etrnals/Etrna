@@ -108,6 +108,10 @@ contract Etrnals is ERC721Enumerable, Ownable, ReentrancyGuard {
         require(success, "Withdraw failed");
     }
 
+    function baseTokenURI() external view returns (string memory) {
+        return _baseTokenURI;
+    }
+
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), "Nonexistent token");
         return string(abi.encodePacked(_baseTokenURI, Strings.toString(tokenId)));
