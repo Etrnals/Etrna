@@ -73,6 +73,33 @@ PORT=3001
 ALLOWLIST_PATH="backend/allowlist.json"
 ```
 
+## Wallet client
+The wallet client uses the Hardhat artifacts from this repo to power a minting UI. You can keep it alongside this project (for example, in a sibling `wallet-client/` directory) and point it at the compiled contract output `artifacts/contracts/Etrnals.sol/Etrnals.json` for the ABI.
+
+### Running the UI
+1. Install dependencies: `npm install` (or `pnpm install`/`yarn install` if you prefer) inside the wallet client folder.
+2. Start a development server: `npm run dev` (typically binds to `http://localhost:3000`).
+3. Build for production: `npm run build` followed by `npm run start`.
+
+### Configuring network and contract
+Create a `.env.local` (or comparable) in the wallet client with values like:
+
+```bash
+NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545       # or your testnet/mainnet RPC
+NEXT_PUBLIC_CONTRACT_ADDRESS=0xYourDeployedContract
+NEXT_PUBLIC_NETWORK_NAME=localhost              # optional display string for the UI
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3001   # backend base URL for Merkle proofs
+```
+
+- `NEXT_PUBLIC_CONTRACT_ADDRESS` and `NEXT_PUBLIC_RPC_URL` must match the network where `Etrnals` is deployed.
+- The ABI is loaded from `artifacts/contracts/Etrnals.sol/Etrnals.json` after running `npm run compile` in this repo.
+- `NEXT_PUBLIC_BACKEND_URL` enables the UI to fetch allowlist Merkle proofs from the Express backend (see the `/allowlist/proof/:address` route in `backend/server.js`).
+
+### Minting through the UI
+- **Allowlist mint:** connect a wallet that is in your allowlist, click the allowlist mint option, enter a quantity within `maxPerWallet`, and the client will fetch a Merkle proof from `${NEXT_PUBLIC_BACKEND_URL}/allowlist/proof/<your_address>` before submitting the transaction.
+- **Public mint:** when `publicMintActive` is true on the contract, choose the public mint flow, set a quantity, and submit with the required `mintPrice` × quantity in ETH.
+- The UI should also display the active network, total supply, and mint toggles using on-chain reads so you can confirm you are pointed at the correct deployment.
+
 ## Building an allowlist
 Merkle proofs in tests are generated with `merkletreejs`. You can use the same approach to produce production roots and proofs:
 
