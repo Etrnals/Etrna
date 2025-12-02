@@ -23,6 +23,11 @@ const cards = [
     title: 'AI Agents',
     description: 'Register and manage on-chain AI agents as first-class users.',
   },
+  {
+    href: '/uef',
+    title: 'UEF Registry',
+    description: 'Register and browse Universal Entitlement Framework metadata.',
+  },
 ];
 
 export default function HomePage() {
