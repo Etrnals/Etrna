@@ -2,6 +2,7 @@
   "name": "etrna",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "packageManager": "pnpm@8",
   "workspaces": [
     "apps/*",
@@ -10,13 +11,9 @@
   "scripts": {
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "test": "turbo run test"
-  }
-}
-  "license": "MIT",
-  "scripts": {
+    "test": "turbo run test",
     "compile": "hardhat compile",
-    "test": "hardhat test",
+    "contract:test": "hardhat test",
     "deploy": "node scripts/deploy.js",
     "start": "node backend/server.js"
   },
