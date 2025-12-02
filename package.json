@@ -1,6 +1,18 @@
 {
   "name": "etrna",
   "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@8",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
+  }
+}
   "license": "MIT",
   "scripts": {
     "compile": "hardhat compile",
