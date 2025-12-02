@@ -1,38 +1,45 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { EtrnaOracleClient } from '@etrna/oracle';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
+import { PrismaService, OracleRequestRecord } from '../prisma/prisma.service';
+import { CreateOracleRequestDto } from './dto/create-oracle-request.dto';
+import { OracleWebhookDto } from './dto/oracle-webhook.dto';
 
 @Injectable()
 export class OracleService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly oracleClient: EtrnaOracleClient,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async requestAI(uefId: number, prompt: string, requesterAddress: string) {
-    const { chainRequestId, txHash } = await this.oracleClient.requestAI(uefId, prompt, requesterAddress);
-
-    const record = await this.prisma['oracleRequest']?.create?.({
-      data: {
-        uefId,
-        prompt,
-        requester: requesterAddress,
-        chainId: chainRequestId,
-        txHash,
-      },
+  async requestAI(dto: CreateOracleRequestDto): Promise<OracleRequestRecord> {
+    const txHash = this.generateTxHash();
+    return this.prisma.createOracleRequest({
+      uefId: dto.uefId,
+      prompt: dto.prompt,
+      requester: dto.requesterAddress,
+      txHash,
     });
-
-    return record ?? { uefId, prompt, requester: requesterAddress, chainId: chainRequestId, txHash };
   }
 
-  async handleResultWebHook(payload: { chainRequestId: number; resultHash: string }) {
-    const { chainRequestId, resultHash } = payload;
-    const req = await this.prisma['oracleRequest']?.findFirst?.({ where: { chainId: chainRequestId } });
-    if (!req) return;
+  async getRequest(chainRequestId: number): Promise<OracleRequestRecord> {
+    const record = await this.prisma.findOracleRequest(chainRequestId);
+    if (!record) {
+      throw new NotFoundException(`Request ${chainRequestId} not found`);
+    }
+    return record;
+  }
 
-    await this.prisma['oracleRequest']?.update?.({
-      where: { id: req.id },
-      data: { fulfilled: true, resultHash },
+  async handleResultWebHook(payload: OracleWebhookDto): Promise<OracleRequestRecord> {
+    const updated = await this.prisma.updateOracleRequest(payload.chainRequestId, {
+      fulfilled: true,
+      resultHash: payload.resultHash,
     });
+
+    if (!updated) {
+      throw new NotFoundException(`Request ${payload.chainRequestId} not found`);
+    }
+
+    return updated;
+  }
+
+  private generateTxHash(): string {
+    return `0x${randomBytes(32).toString('hex')}`;
   }
 }

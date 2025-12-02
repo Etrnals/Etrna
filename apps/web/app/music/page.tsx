@@ -14,7 +14,7 @@ export default function MusicPage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!address) return;
+    if (!address || !musicUpload.ready) return;
 
     setLoading(true);
     try {
@@ -30,6 +30,9 @@ export default function MusicPage() {
     <div className="mx-auto max-w-lg">
       <h1 className="text-2xl font-semibold mb-4">Upload a track</h1>
       {!address && <p className="text-sm text-red-400">Connect your wallet to continue.</p>}
+      {!musicUpload.ready && (
+        <p className="text-sm text-amber-400">Connect your wallet and set NEXT_PUBLIC_DISTRIBUTOR_ADDRESS.</p>
+      )}
       <form onSubmit={onSubmit} className="space-y-4 mt-4">
         <div>
           <label className="text-xs text-slate-400">Title</label>
@@ -61,7 +64,7 @@ export default function MusicPage() {
           </label>
         </div>
         <button
-          disabled={!address || loading}
+          disabled={!address || loading || !musicUpload.ready}
           className="rounded-xl border border-emerald-500 bg-emerald-600/80 px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
           {loading ? 'Uploading...' : 'Upload'}
