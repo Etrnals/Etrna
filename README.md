@@ -35,3 +35,16 @@ This repository provides a Hardhat-based project for the Etrnals ERC-721 collect
 - Base URI can be updated until `lockMetadata` is called; afterwards it is immutable.
 - Allowlist minting requires a Merkle root set via `setAllowlistRoot`.
 - Public minting and allowlist minting can be toggled independently.
+
+### Building an allowlist
+The contract expects each Merkle leaf to be `keccak256(abi.encodePacked(address))`. When generating your tree off-chain, be sure
+to hash addresses the same way, such as:
+
+```js
+const leaf = keccak256(Buffer.from(addr.slice(2).padStart(40, "0"), "hex"));
+// or using ethers v6 helpers:
+// const leaf = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(["address"], [addr]));
+```
+
+Normalize inputs before hashing (e.g., `ethers.getAddress(addr)` or another checksum utility) to ensure proofs built locally
+match what the contract checks on-chain.
