@@ -5,10 +5,12 @@ import { WalletModule } from './wallet/wallet.module';
 import { MusicModule } from './music/music.module';
 import { OracleModule } from './oracle/oracle.module';
 import { AgentModule } from './agent/agent.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    AuthModule,
     PrismaModule,
     WalletModule,
     MusicModule,
