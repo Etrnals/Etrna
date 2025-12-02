@@ -5,6 +5,7 @@ import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Etrnals is ERC721Enumerable, Ownable, ReentrancyGuard {
     uint256 public immutable maxSupply;
@@ -107,9 +108,13 @@ contract Etrnals is ERC721Enumerable, Ownable, ReentrancyGuard {
         require(success, "Withdraw failed");
     }
 
+    function baseTokenURI() external view returns (string memory) {
+        return _baseTokenURI;
+    }
+
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), "Nonexistent token");
-        return string(abi.encodePacked(_baseTokenURI, _toString(tokenId)));
+        return string(abi.encodePacked(_baseTokenURI, Strings.toString(tokenId)));
     }
 
     function _mintTokens(address to, uint256 quantity, bool isAllowlist) internal {
