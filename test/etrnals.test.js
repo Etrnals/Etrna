@@ -29,4 +29,9 @@ describe("Etrnals", () => {
     await expect(contract.connect(user).allowlistMint(1, proof, { value: ethers.parseEther("0.1") }))
       .to.emit(contract, "AllowlistMinted");
   });
+
+  it("exposes base URI for backend status", async () => {
+    const { contract } = await deploy();
+    expect(await contract.baseTokenURI()).to.equal("ipfs://base/");
+  });
 });
