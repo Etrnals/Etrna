@@ -7,6 +7,7 @@ import { OracleModule } from './oracle/oracle.module';
 import { AgentModule } from './agent/agent.module';
 import { AuthModule } from './auth/auth.module';
 import { UefModule } from './uef/uef.module';
+import { GovernanceModule } from './governance/governance.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UefModule } from './uef/uef.module';
     OracleModule,
     AgentModule,
     UefModule,
+    GovernanceModule,
   ],
 })
 export class AppModule {}

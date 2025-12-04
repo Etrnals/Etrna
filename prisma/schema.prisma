@@ -64,3 +64,33 @@ model Agent {
   manifestUri String
   createdAt   DateTime @default(now())
 }
+
+model Proposal {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String
+  proposer    String
+  onchainId   Int?
+  status      String   @default("draft")
+  eta         DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model VoteRecord {
+  id         String   @id @default(cuid())
+  proposalId String
+  voter      String
+  weight     Float
+  choice     String
+  zkProof    Json?
+  createdAt  DateTime @default(now())
+}
+
+model Delegation {
+  id         String   @id @default(cuid())
+  delegator  String
+  delegatee  String
+  scope      String
+  weightPct  Float
+}

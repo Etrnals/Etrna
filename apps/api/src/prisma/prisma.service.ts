@@ -45,6 +45,37 @@ export interface UefRecord {
   updatedAt: Date;
 }
 
+export interface ProposalRecord {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  proposer: string;
+  onchainId?: number;
+  status: string;
+  eta?: Date;
+  createdAt: Date;
+}
+
+export interface VoteRecord {
+  id: string;
+  proposalId: string;
+  voter: string;
+  weight: number;
+  choice: string;
+  zkProof?: Record<string, unknown>;
+  createdAt: Date;
+}
+
+export interface DelegationRecord {
+  id: string;
+  delegator: string;
+  delegatee: string;
+  scope: string;
+  weightPct: number;
+  createdAt: Date;
+}
+
 @Injectable()
 export class PrismaService {
   private agents = new Map<string, AgentRecord>();
@@ -52,9 +83,13 @@ export class PrismaService {
   private oracleRequests = new Map<number, OracleRequestRecord>();
   private smartAccounts = new Map<string, SmartAccountRecord>();
   private uefs = new Map<number, UefRecord>();
+  private proposals = new Map<string, ProposalRecord>();
+  private votes = new Map<string, VoteRecord[]>();
+  private delegations = new Map<string, DelegationRecord[]>();
   private oracleCounter = 1;
   private trackCounter = 1;
   private uefCounter = 1;
+  private proposalCounter = 1;
 
   async createAgent(data: Pick<AgentRecord, 'onchainAddress' | 'manifestUri'>): Promise<AgentRecord> {
     const record: AgentRecord = {
@@ -164,6 +199,88 @@ export class PrismaService {
 
   async findUef(id: number): Promise<UefRecord | null> {
     return this.uefs.get(id) ?? null;
+  }
+
+  async createProposal(
+    data: Pick<ProposalRecord, 'title' | 'description' | 'category' | 'proposer'> & {
+      onchainId?: number;
+      eta?: Date;
+    },
+  ): Promise<ProposalRecord> {
+    const record: ProposalRecord = {
+      id: `proposal-${this.proposalCounter++}`,
+      status: 'draft',
+      createdAt: new Date(),
+      ...data,
+    };
+
+    this.proposals.set(record.id, record);
+    return record;
+  }
+
+  async updateProposal(
+    id: string,
+    update: Partial<Pick<ProposalRecord, 'status' | 'eta' | 'onchainId'>>, 
+  ): Promise<ProposalRecord | null> {
+    const existing = this.proposals.get(id);
+    if (!existing) return null;
+
+    const next: ProposalRecord = { ...existing, ...update };
+    this.proposals.set(id, next);
+    return next;
+  }
+
+  async listProposals(): Promise<ProposalRecord[]> {
+    return Array.from(this.proposals.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async findProposal(id: string): Promise<ProposalRecord | null> {
+    return this.proposals.get(id) ?? null;
+  }
+
+  async recordVote(data: Omit<VoteRecord, 'id' | 'createdAt'>): Promise<VoteRecord> {
+    const record: VoteRecord = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      ...data,
+    };
+
+    const existing = this.votes.get(data.proposalId) ?? [];
+    existing.push(record);
+    this.votes.set(data.proposalId, existing);
+    return record;
+  }
+
+  async listVotes(proposalId: string): Promise<VoteRecord[]> {
+    return this.votes.get(proposalId) ?? [];
+  }
+
+  async upsertDelegation(data: Omit<DelegationRecord, 'id' | 'createdAt'>): Promise<DelegationRecord> {
+    const existing = (this.delegations.get(data.delegator) ?? []).filter(
+      (entry) => !(entry.delegatee === data.delegatee && entry.scope === data.scope),
+    );
+
+    const record: DelegationRecord = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      ...data,
+    };
+
+    existing.push(record);
+    this.delegations.set(data.delegator, existing);
+    return record;
+  }
+
+  async removeDelegation(delegator: string, scope: string): Promise<void> {
+    const entries = this.delegations.get(delegator) ?? [];
+    this.delegations.set(
+      delegator,
+      entries.filter((entry) => entry.scope !== scope),
+    );
+  }
+
+  async listDelegations(delegator: string): Promise<DelegationRecord[]> {
+    return this.delegations.get(delegator) ?? [];
   }
 
   private generateHexAddress(bytes: number) {
