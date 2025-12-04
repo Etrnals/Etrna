@@ -4,6 +4,7 @@ import RewardSummary from './RewardSummary';
 import Notifications from './Notifications';
 import NftGallery from './NftGallery';
 import PassViewer from './PassViewer';
+import UEFDashboard from './UEFDashboard';
 
 export default function Dashboard() {
   return (
@@ -14,6 +15,7 @@ export default function Dashboard() {
       </header>
       <WalletActions />
       <RewardSummary />
+      <UEFDashboard />
       <PassViewer />
       <NftGallery />
       <Notifications />

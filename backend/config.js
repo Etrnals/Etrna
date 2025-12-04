@@ -9,6 +9,8 @@ const config = {
   rpcUrl: process.env.RPC_URL || DEFAULT_RPC_URL,
   contractAddress: process.env.CONTRACT_ADDRESS || "",
   allowlistPath: process.env.ALLOWLIST_PATH || DEFAULT_ALLOWLIST_PATH,
+  encryptionKey: process.env.UEF_ENCRYPTION_KEY || "etrna-uef-dev-key",
+  defaultStorage: process.env.UEF_STORAGE_PROVIDER || "ipfs",
 };
 
 module.exports = config;

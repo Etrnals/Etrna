@@ -4,6 +4,9 @@ const config = require("./config");
 const { getAllowlistData, getProofForAddress } = require("./allowlist");
 const { getContractState } = require("./contractClient");
 const entitlementUpgrades = require("./entitlement-upgrades");
+const uefEncryptor = require("./uef-encryptor");
+const uefStorage = require("./uef-storage");
+const uefMintWorker = require("./uef-mint-worker");
 
 function createApp() {
   const app = express();
@@ -11,6 +14,9 @@ function createApp() {
   app.use(express.json());
 
   app.use("/entitlements", entitlementUpgrades);
+  app.use("/uef/encryptor", uefEncryptor);
+  app.use("/uef/storage", uefStorage);
+  app.use("/uef/mint", uefMintWorker);
 
   let allowlistCache;
 
