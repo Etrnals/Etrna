@@ -1,0 +1,4 @@
+[
+  {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"mintFromOpenSea","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"entitlementSnapshot","outputs":[{"components":[{"internalType":"bool","name":"etrnalsMintAccess","type":"bool"},{"internalType":"bool","name":"walletPerkEnabled","type":"bool"},{"internalType":"uint16","name":"walletMultiplierBps","type":"uint16"},{"internalType":"uint16","name":"vibeCheckBoostBps","type":"uint16"}],"internalType":"struct EtrnaPass721.Entitlement","name":"snapshot","type":"tuple"}],"stateMutability":"view","type":"function"}
+]

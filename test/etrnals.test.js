@@ -1,37 +1,65 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-const deploy = async () => {
-  const [owner, user] = await ethers.getSigners();
-  const factory = await ethers.getContractFactory("Etrnals");
-  const contract = await factory.deploy(
-    "Etrnals",
-    "ETRNL",
-    10,
-    2,
-    ethers.parseEther("0.1"),
-    "ipfs://base/",
-    owner.address
-  );
-  await contract.waitForDeployment();
-  return { contract, owner, user };
-};
+describe("Etrnals suite", function () {
+  async function deploySuite() {
+    const [deployer, user, bluechip] = await ethers.getSigners();
 
-describe("Etrnals", () => {
-  it("mints during allowlist", async () => {
-    const { contract, user } = await deploy();
-    const leaf = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(["address"], [user.address]));
-    const tree = new (require("merkletreejs").MerkleTree)([leaf], ethers.keccak256, { sortPairs: true });
-    await contract.setAllowlistRoot(tree.getHexRoot());
-    await contract.toggleAllowlist(true);
-    const proof = tree.getHexProof(leaf);
+    const speciesData = new Array(9).fill(0).map((_, i) => ({
+      name: `Species ${i}`,
+      maxSupply: 1111,
+      baseURI: "ipfs://base/",
+      utility: "utility"
+    }));
+    const multiplierData = new Array(9).fill(0).map(() => ({
+      vibeMultiplier: 10000,
+      etrMultiplier: 10000,
+      legendaryBonus: 1500
+    }));
 
-    await expect(contract.connect(user).allowlistMint(1, proof, { value: ethers.parseEther("0.1") }))
-      .to.emit(contract, "AllowlistMinted");
+    const Registry = await ethers.getContractFactory("SpeciesRegistry");
+    const registry = await Registry.deploy(9, speciesData, multiplierData);
+
+    const Etrnals = await ethers.getContractFactory("Etrnals721A");
+    const etrnals = await Etrnals.deploy("Etrnals", "ETRNL", ethers.parseEther("0.08"), deployer.address, 750, registry.target);
+    await registry.setMinter(etrnals.target, true);
+
+    const Staking = await ethers.getContractFactory("EtrnalsStaking");
+    const staking = await Staking.deploy(etrnals.target, registry.target);
+
+    const BlueChip = await ethers.getContractFactory("Etrnals");
+    const bc = await BlueChip.deploy("BC", "BC", 10, 10, ethers.parseEther("0.01"), "ipfs://", deployer.address);
+    await bc.togglePublicMint(true);
+    await bc.connect(bluechip).publicMint(1, { value: ethers.parseEther("0.01") });
+
+    return { deployer, user, bluechip, registry, etrnals, staking, bc };
+  }
+
+  it("mints and tracks species supply", async function () {
+    const { etrnals, registry, user } = await deploySuite();
+    await etrnals.setMintStates(false, true, false);
+    await etrnals.connect(user).mint(0, 2, { value: ethers.parseEther("0.16") });
+    expect(await etrnals.totalSupply()).to.equal(2);
+    expect(await registry.mintedBySpecies(0)).to.equal(2);
   });
 
-  it("exposes base URI for backend status", async () => {
-    const { contract } = await deploy();
-    expect(await contract.baseTokenURI()).to.equal("ipfs://base/");
+  it("allows blue-chip minting when holder", async function () {
+    const { etrnals, bc, bluechip } = await deploySuite();
+    await etrnals.setMintStates(false, true, true);
+    await etrnals.setBlueChipCollection(bc.target, true);
+    await etrnals.connect(bluechip).blueChipMint(1, 1, bc.target, { value: ethers.parseEther("0.08") });
+    expect(await etrnals.ownerOf(0)).to.equal(bluechip.address);
+  });
+
+  it("stakes and calculates rewards", async function () {
+    const { etrnals, staking, registry, user } = await deploySuite();
+    await etrnals.setMintStates(false, true, false);
+    await etrnals.connect(user).mint(2, 1, { value: ethers.parseEther("0.08") });
+    await etrnals.connect(user).approve(staking.target, 0);
+    await staking.connect(user).stake([0]);
+    await ethers.provider.send("evm_increaseTime", [3600]);
+    await ethers.provider.send("evm_mine", []);
+    const pending = await staking.pendingRewards(user.address, [0]);
+    expect(pending).to.be.gt(0);
   });
 });

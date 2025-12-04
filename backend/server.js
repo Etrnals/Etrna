@@ -3,11 +3,14 @@ const cors = require("cors");
 const config = require("./config");
 const { getAllowlistData, getProofForAddress } = require("./allowlist");
 const { getContractState } = require("./contractClient");
+const entitlementUpgrades = require("./entitlement-upgrades");
 
 function createApp() {
   const app = express();
   app.use(cors());
   app.use(express.json());
+
+  app.use("/entitlements", entitlementUpgrades);
 
   let allowlistCache;
 

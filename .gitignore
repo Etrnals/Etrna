@@ -13,3 +13,7 @@ states/
 # Optional
 .env
 .env.local
+node_modules/
+**/node_modules/
+dist/
+coverage/
